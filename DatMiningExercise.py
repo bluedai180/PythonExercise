@@ -39,7 +39,12 @@ data = open("twitter.txt", 'r', encoding='utf-8')
 # data.close()
 
 # 6.该文本里，输出在每一天发表tweets最多的用户。（要求：输出一个字典。例如 {'2012-03-04':'agelin','2012-03-5':'twa'}）
+result_dict = dict()
 for x in data.readlines():
-    result.append((x.split('","')[6].split(" ")[0], x.split('","')[1]))
-print(dict(result))
+    result.append((x.split('","')[6].split(" ")[0], x.split('","')[2]))
+result_day = [(x, result.count(x)) for x in set(result)]
+result_day.sort(key=lambda k: (k[0][0], k[1]))
+for y in result_day:
+    result_dict[y[0][0]] = y[0][1]
+print(result_dict)
 data.close()
