@@ -1,8 +1,9 @@
-#coding = utf-8
+# coding = utf-8
 import time
 
 result = []
 data = open("twitter.txt", 'r', encoding='utf-8')
+
 
 # 1.该文本里，有多少个用户。（要求：输出为一个整数。）
 # for x in data.readlines():
@@ -79,3 +80,40 @@ data = open("twitter.txt", 'r', encoding='utf-8')
 # data.close()
 
 # 11. 定义一个函数，该函数可放入任意多的用户uid参数（如果不存在则返回null），函数返回发微薄数最多的用户uid。
+# result_list = []
+# def read_file():
+#     for x in data.readlines():
+#         result.append(x.split('","')[1])
+#     data.close()
+#
+#
+# def get_most_uid(*uids):
+#     for y in uids:
+#         if y in result:
+#             result_list.append((y, result.count(y)))
+#         else:
+#             return
+#
+#     return sorted(result_list, key=lambda x: x[1], reverse=True)[0][0]
+#
+# read_file()
+# search = ["573638104", "86044459"]
+# print(get_most_uid(*search))
+
+# 12. 该文本里，谁发的微博内容长度最长 （要求：输出用户的uid，字符串格式。）
+# for x in data.readlines():
+#     result.append((x.split('","')[1], len(x.split('","')[4])))
+# data.close()
+#
+# print(sorted(result, key=lambda y: y[1], reverse=True)[0][0])
+
+# 13. 该文本里，谁转发的URL最多 （要求：输出用户的uid，字符串格式。）
+for x in data.readlines():
+    if x.split('","')[34] != "":
+        result.append(x.split('","')[1])
+data.close()
+result_list = list(set([(y, result.count(y)) for y in result]))
+print(sorted(result_list, key=lambda y : y[1], reverse=True)[0][0])
+
+# 14. 该文本里，11点钟，谁发的微博次数最多。 （要求：输出用户的uid，字符串格式。）
+# 15. 该文本里，哪个用户的源微博URL次数最多。 （要求：输出用户的uid，字符串格式。）
