@@ -116,4 +116,17 @@ data = open("twitter.txt", 'r', encoding='utf-8')
 # print(sorted(result_list, key=lambda y : y[1], reverse=True)[0][0])
 
 # 14. 该文本里，11点钟，谁发的微博次数最多。 （要求：输出用户的uid，字符串格式。）
+# for x in data.readlines():
+#     if time.strptime(x.split('","')[6], '%Y-%m-%d %H:%M:%S').tm_hour == 11:
+#         result.append(x.split('","')[2])
+#
+# result_list = list(set([(y, result.count(y)) for y in result]))
+# print(sorted(result_list, key=lambda z: z[1], reverse=True)[0][0])
+# data.close()
+
 # 15. 该文本里，哪个用户的源微博URL次数最多。 （要求：输出用户的uid，字符串格式。）
+# for x in data.readlines():
+#     if x.split('","')[33] != "":
+#         result.append(x.split('","')[1])
+# result_list = list(set([(y, result.count(y)) for y in result]))
+# print(sorted(result_list, key=lambda z: z[1], reverse=True)[0][0])
