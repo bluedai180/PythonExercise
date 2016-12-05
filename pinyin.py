@@ -1,33 +1,34 @@
 # coding = utf-8
 result = []
 pinyin = []
-pinyin_panduan = []
 
 data = open("Files/rawdict_utf16_65105_freq.txt", 'r', encoding='utf-8')
+
 for x in data.readlines():
     result.append(x.split(' '))
 
-#print(result)
 for y in result:
-    pinyin.append(y[3])
     if len(y) == 5:
-        pinyin.append(y[3] + y[4])
+        pinyin.append((y[0], "xx_%s_%s" % (y[3], y[4])))
+    elif len(y) == 6:
+        pinyin.append((y[0], "xx_%s_%s_%s" % (y[3], y[4], y[5])))
+    elif len(y) == 7:
+        pinyin.append((y[0], "xx_%s_%s_%s_%s" % (y[3], y[4], y[5], y[6])))
+    elif len(y) == 4:
+        pinyin.append((y[0], "xx_%s" % y[3]))
 
-pinyin_panduan = list(set(pinyin))
 str_text = []
+str_pinyin = ''
+i = len(pinyin)
+f = open("pinyin.txt", 'w')
+for index in range(i):
+    if index < i - 1 and pinyin[index][1] == pinyin[index + 1][1]:
+        str_text.append(pinyin[index][0])
+    else:
+        str_text.append(pinyin[index][0])
+        str_pinyin = pinyin[index][1]
+        f.write("%s = {\"%s\"}\n" % (str_pinyin.replace('\n', ''), "".join(str_text)))
+        str_text.clear()
 
-for z in pinyin_panduan:
-    for item in result:
-        if len(item) == 4:
-            if z == item[3]:
-                str_text.append(item[0])
-        #print('const unsigned char PY_mb_%s []= {"%s"};' % (z, list(set(list(str_text)))))
-    print(str_text)
-        # elif len(item) == 5:
-        #     if z == item[3] + item[4]:
-        #         print('const unsigned char PY_mb_%s_%s []= {"%s"};' % (item[3], item[4], item[0]))
-
-
-#print(pinyin_panduan)
-
+f.close()
 data.close()
