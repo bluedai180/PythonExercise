@@ -2,7 +2,7 @@
 import time
 
 result = []
-data = open("twitter.txt", 'r', encoding='utf-8')
+data = open("Files/twitter.txt", 'r', encoding='utf-8')
 
 
 # 1.该文本里，有多少个用户。（要求：输出为一个整数。）
