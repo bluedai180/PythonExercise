@@ -40,24 +40,25 @@ for x in name:
     if x not in excel_name:
         print(x)
 
+wb_new = Workbook()
+ws_new = wb_new.active
+ws_new.title = "应用一课日报"
+
+
 for x in excel_file:
     wb = load_workbook('../Files/excel_files/%s' % x)
-    table = wb.get_sheet_by_name('星期一')
-    for i in range(table.max_row):
-        if i is not 0:
-            print(table.value)
+    ws = wb.get_sheet_by_name('星期一')
+    excel_cell = list(ws.rows)
+    temp = []
+    for x in excel_cell[1:]:
+        for y in x:
+            temp.append(y.value)
+        ws_new.append(temp)
+        temp.clear()
 
-    print(table.max_row)
-    excel_info.append(list(table.rows))
+wb_new.save("应用一颗日报.xlsx")
 
-# wb_write = Workbook()
-# ws = wb_write.active
-# ws.title = "应用一课日报"
-# ws.cell()
-# wb_write.save("应用一颗日报.xlsx")
 
-# for x in excel_info:
-#     print(x)
 
 
 
