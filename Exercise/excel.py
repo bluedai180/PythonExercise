@@ -2,61 +2,70 @@ import os
 
 from openpyxl import load_workbook
 from openpyxl import Workbook
+import datetime
+import sys
 
 '''
-https://openpyxl.readthedocs.io/en/default/
-北京应用一课日报--xxx
+文档：https://openpyxl.readthedocs.io/en/default/
+功能：整理组内日报脚本
+作者：bluedai180
+时间：2016/12/23
 '''
-# wb = load_workbook("../Files/test1.xlsx")
-# table = wb.get_sheet_by_name('Sheet1')
-#
-# rows = table.max_row
-# cols = table.max_column
-# print(tuple(table.rows))
-# print(list(table.columns))
-
-# wb = Workbook()
-# ws = wb.active
-# ws.title = "New Title"
-# ws['A1'] = 42
-# ws.append([1, 2, 3])
-# import datetime
-# ws['A2'] = datetime.datetime.now()
-# ws.cell(row=4, column=2, value=10)
-# col_range = ws['A1:C2']
-# print(list(col_range))
-#
-# wb.save("sample.xlsx")
 
 
-name = ['姜怀修', '李硕', '耿文达', '吴镇宇', '周影星', '贾勇强', '崔京浩']
-excel_file = os.listdir('../Files/excel_files')
-excel_name = []
-excel_info = []
-for x in excel_file:
-    excel_name.append(x.split('_')[1][0:-5])
+class Daily(object):
+    name = []
+    file_path = '../Files/excel_files'
+    file_name = '应用一课日报.xlsx'
+    excel_title = '应用一课日报'
+    excel_file = []
 
-for x in name:
-    if x not in excel_name:
-        print(x)
+    def __init__(self):
+        self.wb_new = Workbook()
+        self.ws_new = self.wb_new.active
+        self.ws_new.title = self.excel_title
 
-wb_new = Workbook()
-ws_new = wb_new.active
-ws_new.title = "应用一课日报"
+    def check_file(self):
+        self.excel_file = os.listdir(self.file_path)
+        excel_name = []
+        for x in self.excel_file:
+            excel_name.append(x.split('_')[1][0:-5])
+        for x in self.name:
+            if x not in excel_name:
+                print(x)
 
+    def do_files(self, commend):
+        self.ws_new.append(['项目', '工作类别', 'Bug ID', '简要描述', '优先级', '是否reopen', 'reopen原因', '解决方案',
+                            '原因', '责任人', '日期', '备注'])
+        for x in self.excel_file:
+            wb = load_workbook('%s/%s' % (self.file_path, x))
+            ws = wb.get_sheet_by_name(commend)
+            excel_cell = list(ws.rows)
+            temp = []
+            for x in excel_cell[1:]:
+                for y in x:
+                    if type(y.value) is datetime.datetime:
+                        temp.append(y.value.strftime("%Y/%m/%d"))
+                    else:
+                        temp.append(y.value)
+                self.ws_new.append(temp)
+                temp.clear()
+        self.wb_new.save(self.file_name)
 
-for x in excel_file:
-    wb = load_workbook('../Files/excel_files/%s' % x)
-    ws = wb.get_sheet_by_name('星期一')
-    excel_cell = list(ws.rows)
-    temp = []
-    for x in excel_cell[1:]:
-        for y in x:
-            temp.append(y.value)
-        ws_new.append(temp)
-        temp.clear()
+if __name__ == '__main__':
+    daily = Daily()
+    print("以下人员未交日报：")
+    daily.check_file()
+    is_do = input("是否继续生成日报？[y/n]:")
+    if is_do == 'y':
+        commend = input("需要输出星期几的日报：")
+        daily.do_files(commend)
+        print("请查看生成的日报。")
+    elif is_do == 'n':
+        sys.exit(0)
+    else:
+        print("请输入y或者n！")
 
-wb_new.save("应用一颗日报.xlsx")
 
 
 
