@@ -14,6 +14,7 @@ import sys
 
 class Daily(object):
     name = []
+    day_index = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
     file_path = '../Files/excel_files'
     file_name = '../Files/excel_files/应用一课日报.xlsx'
     excel_title = '应用一课日报'
@@ -24,23 +25,32 @@ class Daily(object):
         self.wb_new = Workbook()
         self.ws_new = self.wb_new.active
         self.ws_new.title = self.excel_title
+        if (os.path.exists(self.file_name)):
+            os.remove(self.file_name)
 
     def check_file(self):
         self.excel_file = os.listdir(self.file_path)
         self.excel_name = []
+        name = []
         for x in self.excel_file:
             self.excel_name.append(x.split('_')[1][0:-5])
         for x in self.name:
             if x not in self.excel_name:
-                print(x)
+                name.append(x)
+        if len(name) is not 0:
+            print("以下人员未交日报：\n")
+            print(", ".join(name))
+        else:
+            print("全员日报已交齐！")
 
     def do_files(self, commend):
         self.ws_new.append(['项目', '工作类别', 'Bug ID', '简要描述', '优先级', '是否reopen', 'reopen原因', '解决方案',
                             '原因', '责任人', '日期', '备注'])
+        day = self.day_index[commend - 1]
         for x in self.excel_file:
             print("正在读取: %s" % x)
             wb = load_workbook('%s/%s' % (self.file_path, x), read_only=True)
-            ws = wb.get_sheet_by_name(commend)
+            ws = wb.get_sheet_by_name(day)
             excel_cell = list(ws.rows)
             temp = []
             for x in excel_cell[1:]:
@@ -60,7 +70,7 @@ class Daily(object):
 
 
     def format_file(self):
-        self.ws_new.column_dimensions['A'].width = 14
+        self.ws_new.column_dimensions['A'].width = 20
         self.ws_new.column_dimensions['B'].width = 14
         self.ws_new.column_dimensions['C'].width = 14
         self.ws_new.column_dimensions['D'].width = 70
@@ -71,7 +81,7 @@ class Daily(object):
         self.ws_new.column_dimensions['I'].width = 14
         self.ws_new.column_dimensions['J'].width = 14
         self.ws_new.column_dimensions['K'].width = 14
-        self.ws_new.column_dimensions['L'].width = 14
+        self.ws_new.column_dimensions['L'].width = 25
 
         left, right, top, bottom = [Side(style='thin', color='000000')] * 4
         title = NamedStyle(name="title")
@@ -116,29 +126,29 @@ class Daily(object):
 
     def check_name(self):
         content_name = []
+        name = []
         for x in self.ws_new['J'][1:]:
             content_name.append(x.value)
         for x in self.excel_name:
             if x not in content_name:
-                print(x)
-
+                name.append(x)
+        if len(name) is not 0:
+            print("\n以下人员已提交日报，但工作表内容为空:\n")
+            print(", ".join(name))
 
 if __name__ == '__main__':
     daily = Daily()
-    # print("以下人员未交日报：\n")
-    # daily.check_file()
-    # is_do = input("\n是否继续生成日报？[y/n]:")
-    # if is_do == 'y':
-    #     commend = input("\n需要输出星期几的日报：")
-    #     daily.do_files(commend)
-    #     print("\n请查看生成的日报。")
-    #     # daily.format_file()
-    # elif is_do == 'n':
-    #     sys.exit(0)
-    # else:
-    #     print("请输入y或者n！")
     daily.check_file()
-    daily.do_files('星期五')
+    is_do = input("\n是否继续生成日报？[y/n]:")
+    if is_do == 'y':
+        commend = input("\n需要输出星期几的日报: \n1. 星期一\n2. 星期二\n3. 星期三\n4. 星期四\n5. 星期五\n6. 星期六\n"
+                        "7. 星期日\n请输入序号： ")
+        daily.do_files(int(commend))
+        print("\n=======请查看生成的日报汇总。=======")
+    elif is_do == 'n':
+        sys.exit(0)
+    else:
+        print("请输入y或者n！")
 
 
 
