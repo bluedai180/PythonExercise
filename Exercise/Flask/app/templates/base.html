@@ -1,19 +1,12 @@
 {% extends "bootstrap/base.html" %}
 
+{% block title %}Flasky{% endblock %}
+
 {% block head %}
 {{ super() }}
-<link rel="shortcut icon" href="{{ url_for('static', filename = 'python.png')}}" type="image/x-icon">
-<link rel="icon" href="{{ url_for('static', filename = 'python.png')}}" type="image/x-icon">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 {% endblock %}
-
-{% block scripts %}
-{{super()}}
-{{ moment.include_moment() }}
-<p>The local date and time is {{ moment(current_time).format('LLL')}}</p>
-<p>That was {{ moment(current_time).fromNow(refresh=True)}}</p>
-{% endblock %}
-
-{% block title %}Flasky{% endblock %}
 
 {% block navbar %}
 <div class="navbar navbar-inverse" role="navigation">
@@ -25,11 +18,18 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">Flasky</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">Flasky</a>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li><a href="/">Home</a></li>
+                <li><a href="{{ url_for('main.index') }}">Home</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+                {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>
@@ -44,8 +44,12 @@
         {{ message }}
     </div>
     {% endfor %}
-    {% block page_content  %}{% endblock %}
+
+    {% block page_content %}{% endblock %}
 </div>
 {% endblock %}
 
-
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }}
+{% endblock %}
