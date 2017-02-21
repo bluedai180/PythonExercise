@@ -2,7 +2,7 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Border, Side, Font, Alignment, NamedStyle
 import os
 
-path = "E:\worktest\python\PythonExercise\Files\events_log_20170217_180212.log"
+path = "E:\worktest\python\PythonExercise\Files\monkeysys.log"
 excel_path = "E:\worktest\python\PythonExercise\Files\log.xlsx"
 
 info_total = []
@@ -10,19 +10,40 @@ info_total = []
 if os.path.exists(excel_path):
     os.remove(excel_path)
 
+name = []
+message = []
+detail = []
 with open(path, 'r', encoding='utf-8') as data:
     for x in data:
-        if "am_crash" in x:
-            info = []
-            # time = ''.join(x[0:18])
-            name = ''.join(x[43:]).split(',')[2]
-            exception = ''.join(x[43:]).split(',')[4]
-            java_name = ' '.join(''.join(x[43:]).split(',')[-2:]).replace(']', '')
-            # info.append(time)
-            info.append(name)
-            info.append(exception)
-            info.append(java_name)
-            info_total.append(info)
+
+        # if "am_crash" in x:
+        #     info = []
+        #     # time = ''.join(x[0:18])
+        #     name = ''.join(x[43:]).split(',')[2]
+        #     exception = ''.join(x[43:]).split(',')[4]
+        #     java_name = ' '.join(''.join(x[43:]).split(',')[-2:]).replace(']', '')
+        #     # info.append(time)
+        #     info.append(name)
+        #     info.append(exception)
+        #     info.append(java_name)
+        #     info_total.append(info)
+        if x.startswith('// CRASH: '):
+            name.append(x.split(' ')[2])
+        if x.startswith('// Short Msg:'):
+            message.append(x.split(' ')[3])
+        if x.startswith('// Long Msg:'):
+            detail.append(' '.join(x.split(' ')[3:]))
+
+if len(name) != len(message) != len(detail):
+    print("Wrong message !!!!!!!")
+
+for i in range(len(name)):
+    temp = []
+    temp.append(name[i])
+    temp.append(message[i])
+    temp.append(detail[i])
+    info_total.append(temp)
+
 
 info_total.sort(key=lambda x: x[0])
 
@@ -61,12 +82,10 @@ for i in range(len(info_final)):
     else:
         line_num.append(len(info_final) + 1)
 
-print(line_num)
-
 wb = Workbook()
 ws = wb.active
 ws.title = "events_log"
-ws.append(['总数', '进程名', '错误类型', '错误位置', '复现次数'])
+ws.append(['总数', '进程名', '错误类型', '错误信息', '复现次数'])
 
 ws.column_dimensions['A'].width = 10
 ws.column_dimensions['B'].width = 40
@@ -86,6 +105,5 @@ for i in range(len(line_num)):
 
 for x in info_final:
     ws.append(x)
-    print(x)
 
 wb.save(excel_path)
