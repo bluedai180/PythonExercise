@@ -1,109 +1,127 @@
-from openpyxl import load_workbook, Workbook
+from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, Alignment, NamedStyle
 import os
 
-path = "E:\worktest\python\PythonExercise\Files\monkeysys.log"
-excel_path = "E:\worktest\python\PythonExercise\Files\log.xlsx"
+class MonkeyLog(object):
 
-info_total = []
+    log_path = "/home/blue/python/AlgorithmPython/Files/25179；25187/monkeysys.log"
+    excel_path = "/home/blue/python/AlgorithmPython/Files/log.xlsx"
 
-if os.path.exists(excel_path):
-    os.remove(excel_path)
+    info_total = []
+    info_final = []
 
-name = []
-message = []
-detail = []
-with open(path, 'r', encoding='utf-8') as data:
-    for x in data:
+    def __init__(self):
+        if os.path.exists(self.excel_path):
+            os.remove(self.excel_path)
 
-        # if "am_crash" in x:
-        #     info = []
-        #     # time = ''.join(x[0:18])
-        #     name = ''.join(x[43:]).split(',')[2]
-        #     exception = ''.join(x[43:]).split(',')[4]
-        #     java_name = ' '.join(''.join(x[43:]).split(',')[-2:]).replace(']', '')
-        #     # info.append(time)
-        #     info.append(name)
-        #     info.append(exception)
-        #     info.append(java_name)
-        #     info_total.append(info)
-        if x.startswith('// CRASH: '):
-            name.append(x.split(' ')[2])
-        if x.startswith('// Short Msg:'):
-            message.append(x.split(' ')[3])
-        if x.startswith('// Long Msg:'):
-            detail.append(' '.join(x.split(' ')[3:]))
+    def get_info(self):
+        name = []
+        detail = []
+        with open(self.log_path, 'r', encoding='utf-8') as data:
+            for x in data:
+                if x.startswith('// CRASH: '):
+                    name.append(x.split(' ')[2])
+                if x.startswith('// Long Msg:'):
+                    detail.append(' '.join(x.split(' ')[3:]).replace('\n', ''))
+        if len(name) != len(detail):
+            print("Wrong message !!!!!!!")
 
-if len(name) != len(message) != len(detail):
-    print("Wrong message !!!!!!!")
+        for i in range(len(name)):
+            temp = [name[i], detail[i]]
+            self.info_total.append(temp)
 
-for i in range(len(name)):
-    temp = []
-    temp.append(name[i])
-    temp.append(message[i])
-    temp.append(detail[i])
-    info_total.append(temp)
+    def analyze_info(self):
+        self.info_total.sort(key=lambda x: x[0])
+        each_bug_num = self.count_bug(self.info_total)
+        each_app_num = self.count_app(self.info_total)
+        for i in range(len(each_app_num)):
+            self.info_total[i].insert(0, each_app_num[i])
+        for i in range(len(each_bug_num)):
+            self.info_total[i].append(each_bug_num[i])
+        for x in self.info_total:
+            if x not in self.info_final:
+                self.info_final.append(x)
 
+    def write_excel(self):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "monkey_log"
+        ws.append(['总数', '进程名', '错误信息', '复现次数'])
 
-info_total.sort(key=lambda x: x[0])
+        merge_line_num = self.count_merge(self.info_final)
+        length = len(merge_line_num)
+        for i in range(length):
+            if length == 1:
+                ws.merge_cells('A%s:A%s' % (2, merge_line_num[-1]))
+                ws.merge_cells('B%s:B%s' % (2, merge_line_num[-1]))
+            elif i < length - 1:
+                if merge_line_num[i + 1] - merge_line_num[i] != 1:
+                    ws.merge_cells('A%s:A%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
+                    ws.merge_cells('B%s:B%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
 
-num = []
-for x in info_total:
-    num.append(info_total.count(x))
+        for x in self.info_final:
+            ws.append(x)
+        self.format_excel(ws)
+        wb.save(self.excel_path)
 
-temp_name = []
-for x in info_total:
-    temp_name.append(x[0])
+    def count_app(self, info):
+        temp_name = []
+        temp_num = []
+        for x in info:
+            temp_name.append(x[0])
+        for x in temp_name:
+            temp_num.append(temp_name.count(x))
+        return temp_num
 
-temp_num = []
-for x in temp_name:
-    temp_num.append(temp_name.count(x))
+    def count_bug(self, info):
+        temp_num = []
+        for x in info:
+            temp_num.append(self.info_total.count(x))
+        return temp_num
 
-for i in range(len(temp_num)):
-    info_total[i].insert(0, temp_num[i])
+    def count_merge(self, info):
+        temp_num = []
+        length = len(info)
+        for i in range(length):
+            if i < length - 1:
+                if info[i][1] != info[i + 1][1]:
+                    temp_num.append(i + 2)
+            else:
+                temp_num.append(length + 1)
+        return temp_num
 
-total_num = []
+    def format_excel(self, ws):
+        ws.column_dimensions['A'].width = 8
+        ws.column_dimensions['B'].width = 30
+        ws.column_dimensions['C'].width = 100
+        ws.column_dimensions['D'].width = 10
+        for i in range(ws.max_row):
+            ws.row_dimensions[i + 1].height = 30
+        left, right, top, bottom = [Side(style='thin', color='000000')] * 4
+        title = NamedStyle(name="title")
+        title.font = Font(name=u'宋体', size=11)
+        title.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        title.border = Border(left=left, right=right, top=top, bottom=bottom)
+        content = NamedStyle(name="content")
+        content.font = Font(name=u'宋体', size=11)
+        content.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        content.border = Border(left=left, right=right, top=top, bottom=bottom)
+        content_long = NamedStyle(name="content_long")
+        content_long.font = Font(name=u'宋体', size=11)
+        content_long.border = Border(left=left, right=right, top=top, bottom=bottom)
+        content_long.alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
+        for x in ws[1]:
+            x.style = title
+        for x in ws['A:B']:
+            for y in x:
+                y.style = content
+        for x in ws['C'][1:]:
+            x.style = content_long
+        for x in ws['D'][1:]:
+            x.style = content
 
-info_final = []
-
-for i in range(len(num)):
-    info_total[i].append(num[i])
-
-for x in info_total:
-    if x not in info_final:
-        info_final.append(x)
-
-line_num = []
-
-for i in range(len(info_final)):
-    if i < len(info_final) - 1:
-        if info_final[i][1] != info_final[i + 1][1]:
-            line_num.append(i + 2)
-    else:
-        line_num.append(len(info_final) + 1)
-
-wb = Workbook()
-ws = wb.active
-ws.title = "events_log"
-ws.append(['总数', '进程名', '错误类型', '错误信息', '复现次数'])
-
-ws.column_dimensions['A'].width = 10
-ws.column_dimensions['B'].width = 40
-ws.column_dimensions['C'].width = 40
-ws.column_dimensions['D'].width = 40
-ws.column_dimensions['E'].width = 10
-
-if len(line_num) == 1:
-    ws.merge_cells('A%s:A%s' % (2, line_num[-1]))
-    ws.merge_cells('B%s:B%s' % (2, line_num[-1]))
-
-for i in range(len(line_num)):
-    if i < len(line_num) - 1:
-        if line_num[i + 1] - line_num[i] != 1:
-            ws.merge_cells('A%s:A%s' % (line_num[i] + 1, line_num[i + 1]))
-            ws.merge_cells('B%s:B%s' % (line_num[i] + 1, line_num[i + 1]))
-
-for x in info_final:
-    ws.append(x)
-
-wb.save(excel_path)
+if __name__ == '__main__':
+    log = MonkeyLog()
+    log.get_info()
+    log.analyze_info()
+    log.write_excel()
