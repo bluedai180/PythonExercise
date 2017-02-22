@@ -2,10 +2,11 @@ from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, Alignment, NamedStyle
 import os
 
+
 class MonkeyLog(object):
 
-    log_path = "/home/blue/python/AlgorithmPython/Files/25179；25187/monkeysys.log"
-    excel_path = "/home/blue/python/AlgorithmPython/Files/log.xlsx"
+    log_path = "E:\worktest\python\PythonExercise\Files\monkeysys.log"
+    excel_path = "E:\worktest\python\PythonExercise\Files\log.xlsx"
 
     info_total = []
     info_final = []
@@ -14,18 +15,18 @@ class MonkeyLog(object):
         if os.path.exists(self.excel_path):
             os.remove(self.excel_path)
 
-    def get_info(self):
+
+    def get_info(self, app_name, message, index):
         name = []
         detail = []
         with open(self.log_path, 'r', encoding='utf-8') as data:
             for x in data:
-                if x.startswith('// CRASH: '):
-                    name.append(x.split(' ')[2])
-                if x.startswith('// Long Msg:'):
-                    detail.append(' '.join(x.split(' ')[3:]).replace('\n', ''))
+                if x.startswith(app_name):
+                    name.append(x.split(' ')[2].replace('\n', ''))
+                if x.startswith(message):
+                    detail.append(' '.join(x.split(' ')[index:]).replace('\n', ''))
         if len(name) != len(detail):
             print("Wrong message !!!!!!!")
-
         for i in range(len(name)):
             temp = [name[i], detail[i]]
             self.info_total.append(temp)
@@ -42,12 +43,8 @@ class MonkeyLog(object):
             if x not in self.info_final:
                 self.info_final.append(x)
 
-    def write_excel(self):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "monkey_log"
+    def write_excel(self, ws, title_style, content_style, content_long_style):
         ws.append(['总数', '进程名', '错误信息', '复现次数'])
-
         merge_line_num = self.count_merge(self.info_final)
         length = len(merge_line_num)
         for i in range(length):
@@ -58,11 +55,12 @@ class MonkeyLog(object):
                 if merge_line_num[i + 1] - merge_line_num[i] != 1:
                     ws.merge_cells('A%s:A%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
                     ws.merge_cells('B%s:B%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
-
         for x in self.info_final:
             ws.append(x)
-        self.format_excel(ws)
+        self.format_excel(ws, title_style, content_style, content_long_style)
         wb.save(self.excel_path)
+        self.info_final.clear()
+        self.info_total.clear()
 
     def count_app(self, info):
         temp_name = []
@@ -90,38 +88,50 @@ class MonkeyLog(object):
                 temp_num.append(length + 1)
         return temp_num
 
-    def format_excel(self, ws):
+    def format_excel(self, ws, title_style, content_style, content_long_style):
         ws.column_dimensions['A'].width = 8
         ws.column_dimensions['B'].width = 30
         ws.column_dimensions['C'].width = 100
         ws.column_dimensions['D'].width = 10
         for i in range(ws.max_row):
             ws.row_dimensions[i + 1].height = 30
-        left, right, top, bottom = [Side(style='thin', color='000000')] * 4
-        title = NamedStyle(name="title")
-        title.font = Font(name=u'宋体', size=11)
-        title.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        title.border = Border(left=left, right=right, top=top, bottom=bottom)
-        content = NamedStyle(name="content")
-        content.font = Font(name=u'宋体', size=11)
-        content.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        content.border = Border(left=left, right=right, top=top, bottom=bottom)
-        content_long = NamedStyle(name="content_long")
-        content_long.font = Font(name=u'宋体', size=11)
-        content_long.border = Border(left=left, right=right, top=top, bottom=bottom)
-        content_long.alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
         for x in ws[1]:
-            x.style = title
+            x.style = title_style
         for x in ws['A:B']:
             for y in x:
-                y.style = content
+                y.style = content_style
         for x in ws['C'][1:]:
-            x.style = content_long
+            x.style = content_long_style
         for x in ws['D'][1:]:
-            x.style = content
+            x.style = content_style
 
 if __name__ == '__main__':
-    log = MonkeyLog()
-    log.get_info()
-    log.analyze_info()
-    log.write_excel()
+    crash = MonkeyLog()
+    anr = MonkeyLog()
+    wb = Workbook()
+
+    left, right, top, bottom = [Side(style='thin', color='000000')] * 4
+    title = NamedStyle(name="title")
+    title.font = Font(name=u'宋体', size=11)
+    title.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    title.border = Border(left=left, right=right, top=top, bottom=bottom)
+    content = NamedStyle(name="content")
+    content.font = Font(name=u'宋体', size=11)
+    content.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    content.border = Border(left=left, right=right, top=top, bottom=bottom)
+    content_long = NamedStyle(name="content_long")
+    content_long.font = Font(name=u'宋体', size=11)
+    content_long.border = Border(left=left, right=right, top=top, bottom=bottom)
+    content_long.alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
+
+    crash.get_info('// CRASH: ', '// Long Msg:', 3)
+    crash.analyze_info()
+    ws_crash = wb.active
+    ws_crash.title = "crash"
+    crash.write_excel(ws_crash, title, content, content_long)
+
+    anr.get_info('ANR in', 'Reason:', 1)
+    anr.analyze_info()
+    ws_anr = wb.create_sheet("anr")
+    anr.write_excel(ws_anr, title, content, content_long)
+
