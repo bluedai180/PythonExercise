@@ -1,20 +1,24 @@
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, Alignment, NamedStyle
 import os
+import tkinter.filedialog as filedialog
+from tkinter import *
 
+"""
+作者：Blue（应用开发部）
+功能：统计MonkeyLog的crash和anr信息
+版本：1.0
+"""
 
 class MonkeyLog(object):
 
-    log_path = "E:\worktest\python\PythonExercise\Files\monkeysys.log"
-    excel_path = "E:\worktest\python\PythonExercise\Files\log.xlsx"
-
+    log_path = ''
     info_total = []
     info_final = []
 
     def __init__(self):
-        if os.path.exists(self.excel_path):
-            os.remove(self.excel_path)
-
+        if os.path.exists(os.path.dirname(os.path.abspath(self.log_path)) + '\log.xlsx'):
+            os.remove(os.path.dirname(os.path.abspath(self.log_path)) + '\log.xlsx')
 
     def get_info(self, app_name, message, index):
         name = []
@@ -58,9 +62,10 @@ class MonkeyLog(object):
         for x in self.info_final:
             ws.append(x)
         self.format_excel(ws, title_style, content_style, content_long_style)
-        wb.save(self.excel_path)
+        wb.save(os.path.dirname(os.path.abspath(self.log_path)) + "\log.xlsx")
         self.info_final.clear()
         self.info_total.clear()
+        print("%s表数据已经写入." % ws.title)
 
     def count_app(self, info):
         temp_name = []
@@ -105,7 +110,30 @@ class MonkeyLog(object):
         for x in ws['D'][1:]:
             x.style = content_style
 
+    @staticmethod
+    def open_win():
+        root = Tk()
+        root.title("MonkeyLog 分析")
+        ws = root.winfo_screenwidth()
+        hs = root.winfo_screenheight()
+        x = ws/2 - 400/2
+        y = hs/2 - 200/2
+        root.geometry("400x200+%d+%d" % (x, y))
+
+        def callback():
+            MonkeyLog.log_path = filedialog.askopenfilename()
+            entry.insert(0, MonkeyLog.log_path)
+        button = Button(root, text="选择MonkeyLog文件", command=callback)
+        quit_btn = Button(root, text="确定", command=root.destroy)
+        entry = Entry(root)
+        entry.pack(side=TOP, anchor="nw", fill=X, pady=40)
+        button.pack(side=TOP)
+        quit_btn.pack(side=TOP, pady=10)
+        root.mainloop()
+
 if __name__ == '__main__':
+    MonkeyLog.open_win()
+
     crash = MonkeyLog()
     anr = MonkeyLog()
     wb = Workbook()
@@ -134,4 +162,7 @@ if __name__ == '__main__':
     anr.analyze_info()
     ws_anr = wb.create_sheet("anr")
     anr.write_excel(ws_anr, title, content, content_long)
+    print("数据已经导出完毕，请到其log文件目录下查看log.xlsx文件！")
+
+
 
