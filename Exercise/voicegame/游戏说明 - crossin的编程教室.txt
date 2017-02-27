@@ -1,0 +1,9 @@
+﻿windows可直接点击 game.exe 运行，但需要接有麦克风。
+其他平台从代码运行，需安装 cocos2d-python 和 pyaudio
+
+
+微信公众号：Crossin的编程教室
+微信：crossin11
+
+超好懂的Python入门
+编程世界的新手村
