@@ -23,17 +23,34 @@ class MonkeyLog(object):
     def get_info(self, app_name, message, index):
         name = []
         detail = []
-        with open(self.log_path, 'r', encoding='utf-8') as data:
-            for x in data:
-                if x.startswith(app_name):
-                    name.append(x.split(' ')[2].replace('\n', ''))
-                if x.startswith(message):
-                    detail.append(' '.join(x.split(' ')[index:]).replace('\n', ''))
+        info = []
+        f = open(self.log_path, 'r', encoding='utf-8')
+
+        # with open(self.log_path, 'r', encoding='utf-8') as data:
+        #     for x in data:
+        #         if x.startswith(app_name):
+        #             name.append(x.split(' ')[2].replace('\n', ''))
+        #         if x.startswith(message):
+        #             detail.append(' '.join(x.split(' ')[index:]).replace('\n', ''))
+
+        for line, data in enumerate(f):
+            # for x in data:
+            if data.startswith(app_name):
+                name.append(data.split(' ')[2].replace('\n', ''))
+                info.append(line)
+            if data.startswith(message):
+                detail.append(' '.join(data.split(' ')[index:]).replace('\n', ''))
+            if len(info) is not 0:
+                for x in info:
+                    if line == x + 6:
+                        print(data)
+        print(info)
         if len(name) != len(detail):
             print("Wrong message !!!!!!!")
         for i in range(len(name)):
             temp = [name[i], detail[i]]
             self.info_total.append(temp)
+        f.close()
 
     def analyze_info(self):
         self.info_total.sort(key=lambda x: x[0])
@@ -158,10 +175,10 @@ if __name__ == '__main__':
     ws_crash.title = "crash"
     crash.write_excel(ws_crash, title, content, content_long)
 
-    anr.get_info('ANR in', 'Reason:', 1)
-    anr.analyze_info()
-    ws_anr = wb.create_sheet("anr")
-    anr.write_excel(ws_anr, title, content, content_long)
+    # anr.get_info('ANR in', 'Reason:', 1)
+    # anr.analyze_info()
+    # ws_anr = wb.create_sheet("anr")
+    # anr.write_excel(ws_anr, title, content, content_long)
     print("数据已经导出完毕，请到其log文件目录下查看log.xlsx文件！")
 
 
