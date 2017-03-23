@@ -23,19 +23,25 @@ num_sort = sorted(num)
 num_total = list(itertools.combinations(num_sort, 4))
 for x in num_total:
     print(x)
-    for y in list(x):
-        temp = [i for i, v in enumerate(num) if v == y]
-        if (len(temp) > 1):
-            # for z in temp:
-            #     index.append(str(z))
-            pass
+    x_list = list(x)
+    for i in range(len(x_list)):
+        if i < len(x_list) - 1:
+            if x_list[i] != x_list[i + 1]:
+                temp = [y for y, v in enumerate(num) if v == x_list[i]]
+                if x_list.count(x_list[i]) == len(temp):
+                    index.extend([str(x) for x in temp])
+                else:
+                    index.append(str(temp[0]))
+            else:
+                pass
         else:
-            index.append(str(temp[0]))
+            pass
+    print(index)
 
-    if "".join(index) == "".join(sorted("".join(index))):
-        print(x)
-        print(len(x))
-        exit()
+    # if "".join(index) == "".join(sorted("".join(index))):
+    #     print(x)
+    #     print(len(x))
+        # exit()
     index.clear()
 
 
