@@ -40,12 +40,12 @@ class MonkeyLog(object):
 
         for x in lines_message:
             if x - 2 not in lines_name:
-                detail.remove(detail[lines_message.index(x)])
+                del detail[lines_message.index(x)]
                 wrong_lines.append(str(x))
 
         for x in lines_name:
             if x + 2 not in lines_message:
-                name.remove(name[lines_name.index(x)])
+                del name[lines_name.index(x)]
                 wrong_lines.append(str(x))
 
         if len(name) != len(detail):
