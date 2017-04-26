@@ -18,6 +18,9 @@ from tkinter import *
 2.对于格式错误的提交不会影响正确格式提交的excel表数据
 3.新增“格式错误列表”，统计格式错误的信息，并附修改建议
 ===================================================
+版本：v1.2
+功能：新增对spm merge的log信息提取出原始svn log信息
+===================================================
 """
 
 
@@ -55,10 +58,15 @@ class ReleaseNotes(object):
         temp = []
         temp_wrong = []
         for text in info_total:
-            text_list = [x for x in text.split('\n') if x != ""]
+            text_list = [x for x in text.split('\n') if x != "" and x != "[original log] "]
             try:
-                author = text_list[1].split(']')[0].split(":")[1].lstrip()
-                bug_id = text_list[1].split(']')[1].split("+")[1].lstrip()
+                if text_list[1].split(']')[0] == "[original log":
+                    author = text_list[1].split(']')[1].split(":")[1].lstrip()
+                    bug_id = text_list[1].split(']')[2].split("+")[1].lstrip()
+                else:
+                    author = text_list[1].split(']')[0].split(":")[1].lstrip()
+                    bug_id = text_list[1].split(']')[1].split("+")[1].lstrip()
+
                 svn_id = text_list[0].split('|')[0].replace('r', '').lstrip()
                 temp.append(bug_id)
                 temp.append(author)
@@ -155,8 +163,8 @@ class ReleaseNotes(object):
         for x in self.ws['F'][1:]:
             x.style = content
 
-        print("格式正确个数 %d" % self.ws.max_row)
-        print("格式错误个数 %d" % self.ws_wrong.max_row)
+        print("格式正确个数 %d" % (self.ws.max_row - 1))
+        print("格式错误个数 %d" % (self.ws_wrong.max_row - 1))
         self.wb.save(os.path.dirname(os.path.abspath(self.path)) + "\\" + os.path.basename(self.path).replace(".txt",
                                                                                                               ".xlsx"))
 
