@@ -79,14 +79,19 @@ class MonkeyLog(object):
         ws.append(['总数', '进程名', '错误信息', '复现次数'])
         merge_line_num = self.count_merge(self.info_final)
         length = len(merge_line_num)
-        for i in range(length):
-            if length == 1:
-                ws.merge_cells('A%s:A%s' % (2, merge_line_num[-1]))
-                ws.merge_cells('B%s:B%s' % (2, merge_line_num[-1]))
-            elif i < length - 1:
-                if merge_line_num[i + 1] - merge_line_num[i] != 1:
-                    ws.merge_cells('A%s:A%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
-                    ws.merge_cells('B%s:B%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
+        if length == 1:
+            ws.merge_cells('A%s:A%s' % (2, merge_line_num[-1]))
+            ws.merge_cells('B%s:B%s' % (2, merge_line_num[-1]))
+        else:
+            if merge_line_num[0] != 2:
+                ws.merge_cells('A%s:A%s' % (2, merge_line_num[0]))
+                ws.merge_cells('B%s:B%s' % (2, merge_line_num[0]))
+            for i in range(length):
+                if i < length - 1:
+                    if merge_line_num[i + 1] - merge_line_num[i] != 1:
+                        ws.merge_cells('A%s:A%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
+                        ws.merge_cells('B%s:B%s' % (merge_line_num[i] + 1, merge_line_num[i + 1]))
+
         for x in self.info_final:
             ws.append(x)
         self.format_excel(ws, title_style, content_style, content_long_style)
