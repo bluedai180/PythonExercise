@@ -22,13 +22,18 @@ def get_date():
 def get_traffic_control():
     response = requests.get("http://xianxing.911cha.com/beijing.html", headers=headers, timeout=5)
     soup = BeautifulSoup(response.text, "html.parser")
-    for x in soup.find_all("div"):
+    # for x in soup.find_all("div"):
         # if x.get("class") == ['f18', 'l200'] and "今天" in x.string:
         #     print(x.string)
-        if x.get("class") == ['f24', 'l200']:
-            info.append("今日限行尾号：%s和%s" % (str(x).split(">")[1][0], str(x).split(">")[3][1]))
-            break
-
+        # if x.get("class") == ['f24', 'l200']:
+        #     info.append("今日限行尾号：%s和%s" % (str(x).split(">")[1][0], str(x).split(">")[3][1]))
+        #     print(x.string)
+        #     break
+    temp = soup.find_all("td")[0].find_all("div")[1]
+    if temp.string is None:
+        info.append("今日限行尾号：%s和%s" % (str(temp).split(">")[1][0], str(temp).split(">")[3][1]))
+    else:
+        info.append("今日限行尾号：%s" % temp.string)
 
 def get_weather():
     response = requests.get(
