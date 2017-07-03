@@ -2,7 +2,6 @@ from wxpy import *
 import requests
 from bs4 import BeautifulSoup
 import json
-import time
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 headers = {
@@ -22,18 +21,12 @@ def get_date():
 def get_traffic_control():
     response = requests.get("http://xianxing.911cha.com/beijing.html", headers=headers, timeout=5)
     soup = BeautifulSoup(response.text, "html.parser")
-    # for x in soup.find_all("div"):
-        # if x.get("class") == ['f18', 'l200'] and "今天" in x.string:
-        #     print(x.string)
-        # if x.get("class") == ['f24', 'l200']:
-        #     info.append("今日限行尾号：%s和%s" % (str(x).split(">")[1][0], str(x).split(">")[3][1]))
-        #     print(x.string)
-        #     break
     temp = soup.find_all("td")[0].find_all("div")[1]
     if temp.string is None:
         info.append("今日限行尾号：%s和%s" % (str(temp).split(">")[1][0], str(temp).split(">")[3][1]))
     else:
         info.append("今日限行尾号：%s" % temp.string)
+
 
 def get_weather():
     response = requests.get(
@@ -53,7 +46,7 @@ def get_weather():
 
 
 def send_wechat(message):
-    my_friend = bot.groups().search(keywords="东坝老司机们")[0]
+    my_friend = bot.groups().search(keywords="应用课一组")[0]
     my_friend.send(message)
 
 
@@ -70,8 +63,5 @@ def job():
 if __name__ == "__main__":
     bot = Bot(qr_path="E:\\test.png")
     scheduler = BlockingScheduler()
-    scheduler.add_job(job, 'cron', day_of_week='1-7', hour=6, minute=00)
+    scheduler.add_job(job, 'cron', day_of_week='0-7', hour=6, minute=00)
     scheduler.start()
-    # while True:
-    #     time.sleep(5)
-    #     job()
